@@ -4,7 +4,9 @@ import sys
 
 import discord
 from discord.ext import commands
+from discord.utils import get
 
+lang_emojis: list = ['c_', 'cpp', 'python', 'php', 'ruby', 'java', 'javascript', 'typescript', 'nodejs', 'css']
 emojis: dict
 logger = logging.getLogger("discord")
 logger.setLevel(logging.INFO)
@@ -23,9 +25,18 @@ async def on_ready():
 @bot.command(name="안녕")
 async def hello(context):
     message: discord.Message = context.message
-    for emoji in ['c_', 'cpp', 'python', 'php', 'ruby', 'java', 'javascript', 'typescript', 'nodejs', 'css']:
+    for emoji in lang_emojis:
         await message.add_reaction(emojis[emoji])
     await context.send("흠")
+
+
+@bot.command(name="역할신청")
+async def set_role(context):
+    message: discord.Message = context.message
+    for emoji in lang_emojis:
+        await message.add_reaction(emojis[emoji])
+
+    await context.author.add_roles(get(context.author, role))
 
 
 bot.run(os.environ['BOT_TOKEN'])
