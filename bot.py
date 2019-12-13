@@ -23,7 +23,7 @@ async def on_ready():
 @bot.command(name="안녕")
 async def hello(context):
     message: discord.Message = context.message
-    for emoji in ['c_', 'cpp', 'python', 'php', 'ruby', 'java', 'javascript', 'typescript', 'nodejs', 'html', 'css']:
+    for emoji in ['c_', 'cpp', 'python', 'php', 'ruby', 'java', 'javascript', 'typescript', 'nodejs', 'css']:
         await message.add_reaction(emojis[emoji])
     await context.send("흠")
 
