@@ -1,0 +1,5 @@
+#NOTE config.py.example에서 config.py로 파일이름을 변경 후 사용해주세요.
+class CoderBot:
+    token = ""
+
+    init_cogs = []
