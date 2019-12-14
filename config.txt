@@ -1,1 +1,1 @@
-role_setting_channel=655322859823955969
+role_setting_msg_id=655322859823955969

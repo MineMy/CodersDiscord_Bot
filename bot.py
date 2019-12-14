@@ -19,7 +19,7 @@ bot = commands.Bot(command_prefix='!', description=desc)
 
 # 역할 설정 관련 변수들
 roles_dict: dict = {'c_' : 'C', 'cpp': 'C++', 'csharp' : 'C#'}
-role_setting_channel_id = 655322859823955969
+role_setting_msg_id = 655322859823955969
 emojis: dict
 
 @bot.event
@@ -36,16 +36,23 @@ on_raw_reaction_add(payload):
     ...
     
 봇에 캐싱되지 않은 메세지에 반응이 추가되었을 때 실행되는 이벤트입니다.
-paylod는 
+paylod는 discord.RawReactionActionEvent class로, 자세한 설명은
+
+on_raw_reaction_add() 이벤트 설명 : https://discordpy.readthedocs.io/en/latest/api.html#event-reference
+payload 설명 : https://discordpy.readthedocs.io/en/latest/api.html#discord.RawReactionActionEvent
+
+에서 확인하실 수 있습니다.
 '''
 
 @bot.event
 async def on_raw_reaction_add(payload):
-    msg_id = payload.message.id
-    if msg_id is role_setting_channel_id:
+    print(f'{payload.user_id} 님이 {payload.emoji.name} 반응을 남겼습니다.')
+    msg_id = payload.message_id
+    if msg_id is role_setting_msg_id:
+        print(f'{payload.user_id} 님이 역할을 신청했습니다.')
         guild_id = payload.guild.id
         guild = find(lambda g : g.id == guild_id, bot.guilds)
-        role = get(guild.roles, name = roles_dict[payload.emoji.name])
+        role = get(guild.roles, name=roles_dict['lang'][payload.emoji.name])
         if role is not None:
             member = find(lambda m : m.id == payload.user_id, guild.members)
             if member is not None:
@@ -54,6 +61,8 @@ async def on_raw_reaction_add(payload):
                 logger.error('member not found')
         else:
             logger.error('role not found')
+    else:
+        logger.debug(f'{payload.emoji.name} is used at {msg_id}')
 
 
 '''
@@ -65,8 +74,10 @@ bot.process_commands(message)
 위 구문 없이 on_message를 사용할 경우, 메세지가 이 이벤트에서만 처리되고 명령어가 실행되지 않습니다.
 이 구문은 전달받은 메세지를 명령어들에게 전달해 명령어도 실행되도록 합니다.
 '''
+
 @bot.event
 async def on_message(message):
+    print(f'print() : {message.author} used {message.content} in {message.channel}')
     logger.debug(f'{message.author} used {message.content} in {message.channel}')
     await bot.process_commands(message)
 
@@ -152,17 +163,24 @@ async def (함수명)(ctx, 필요한 추가 인자):
 '''
 
 
-@commands.group(name="설정")
+@commands.is_owner()
+@bot.group(name="설정", invoke_without_command=True)
 async def setting(ctx):
-    pass
+    await ctx.send('!설정 역할지급을 사용해 주세요.')
 
 
+@commands.is_owner()
 @setting.command(name="역할지급")
 async def set_role(ctx):
-    logger.debug('ser_role 진입')
+    #logger.debug('set_role 진입')
+    print('set_role 진입')
     msg = await ctx.send('현재 사용 가능한 역할들입니다!')
-    for emoji in roles_dict.keys():
+    print(f'msg = {msg}')
+    print(f"roles_dict['lang'].keys() = {roles_dict['lang'].keys()}")
+    for emoji in roles_dict['lang'].keys():
+        print(emoji)
         await msg.add_reaction(emojis[emoji])
+    print('완료')
 
 
 def init():
@@ -170,9 +188,11 @@ def init():
     try:
         from config import CoderBot as Config
     except ModuleNotFoundError as error:
-        logger.error(f'config.py가 존재하지 않습니다! 설정이 필요합니다.')
+        # logger.error(f'config.py가 존재하지 않습니다! 설정이 필요합니다.')
+        print(f'config.py가 존재하지 않습니다! 설정이 필요합니다.')
         token = input('discord application의 bot token을 입력해 주세요! : ')
     else:
+        print('config.py 발견')
         for init_cog in Config.init_cogs:
             try:
                 bot.load_extension("cogs.{}".format(init_cog))
@@ -192,13 +212,32 @@ def init():
         token = Config.token
 
     # config.txt 파일 불러오기
-    config = open(mode='rt', file='config.txt')
+    print('config.txt 불러옴')
+    config = open(mode='rt', file='config.txt', encoding='UTF8')
     global role_setting_channel_id
-    role_setting_channel_id = int(config.readline().translate(str.maketrans('', '', "role_setting_channel=")))
-    logger.debug(f'role_setting_channel_id = {str(role_setting_channel_id)}')
+    role_setting_msg_id = int(config.readline().translate(str.maketrans('', '', "role_setting_msg_id=")))
+    #logger.debug(f'role_setting_msg_id = {str(role_setting_msg_id)}')
+    print(f'role_setting_msg_id = {str(role_setting_msg_id)}')
+    config.close()
+
+    # roles_list.json 불러오기
+    rl = open(mode='rt', file='roles_list.json', encoding='UTF8')
+    import json
+    roles_dict = json.loads(rl.read())
+    rl.close()
+    print(f'roles_dict = {roles_dict}')
 
 
+def save_datas():
+    global role_setting_channel_id
+    config = open(mode='wt', file='config.txt')
+    config.write(f'role_setting_msg_id={str(role_setting_msg_id)}')
+    config.close()
+
+print('init 실행')
 init()
 logger.debug(f'token = {token}')
 bot.run(token)
+save_datas()
+
 
