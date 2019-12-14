@@ -7,6 +7,8 @@ import discord
 from discord.ext import commands
 from discord.utils import get, find
 
+from config import CoderBot as Config
+
 lang_emojis: list = ['c_', 'cpp', 'python', 'php', 'ruby', 'java', 'javascript', 'typescript', 'nodejs', 'css']
 role_setting: dict = {'c_' : 'C', 'cpp': 'C++', 'csharp' : 'C#'}
 role_setting_id = 655322859823955969
@@ -80,4 +82,15 @@ async def set_role(ctx):
         await ctx.send('역할 부여가 완료되었습니다.')
     '''
 
-bot.run(os.environ['BOT_TOKEN'])
+for init_cog in Config.init_cogs:
+    try:
+        bot.load_extension("cogs.{}".format(init_cog))
+    except commands.errors.ExtensionNotFound:
+        logger.error("Cog not found: {}".format(init_cog))
+    except Exception as e:
+        logger.exception("Error while load cog {}".format(init_cog))
+    else:
+        logger.debug("Load: {}".format(init_cog))
+
+bot.run(Config.token)
+
