@@ -93,4 +93,3 @@ for init_cog in Config.init_cogs:
         logger.debug("Load: {}".format(init_cog))
 
 bot.run(Config.token)
-
