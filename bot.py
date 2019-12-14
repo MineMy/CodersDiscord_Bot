@@ -13,6 +13,7 @@ lang_emojis: list = ['c_', 'cpp', 'python', 'php', 'ruby', 'java', 'javascript',
 role_setting: dict = {'c_' : 'C', 'cpp': 'C++', 'csharp' : 'C#'}
 role_setting_id = 655322859823955969
 emojis: dict
+logging.getLogger("discord.gateway").setLevel(logging.WARNING)
 logger = logging.getLogger("discord")
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
