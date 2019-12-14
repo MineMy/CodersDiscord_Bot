@@ -51,7 +51,7 @@ async def on_command_error(ctx, e):
         return
 
 @commands.is_owner()
-@bot.group(name="모듈")
+@bot.group(name="모듈", invoke_without_command=True)
 async def cmd_cog(ctx):
     msg = "현재 불러와진 모듈:"
     for module in bot.extensions:
