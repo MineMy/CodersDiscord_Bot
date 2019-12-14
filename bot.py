@@ -53,7 +53,12 @@ async def on_command_error(ctx, e):
 @commands.is_owner()
 @bot.group(name="모듈")
 async def cmd_cog(ctx):
-    pass
+    msg = "현재 불러와진 모듈:"
+    for module in bot.extensions:
+        msg += "\n  {}".format(module)
+    
+    msg += "\n\n사용법: `모듈 (로드/언로드/리로드) [모듈이름]`"
+    await ctx.send(msg)
 
 @commands.is_owner()
 @cmd_cog.command(name="로드")
