@@ -61,18 +61,18 @@ async def cmd_cog_load(ctx, *, cog_name):
     try:
         bot.load_extension("cogs.{}".format(cog_name))
     except commands.errors.ExtensionNotFound:
-        return ctx.send("해당 모듈을 찾을 수 없습니다.")
+        return await ctx.send("해당 모듈을 찾을 수 없습니다.")
     except commands.errors.ExtensionAlreadyLoaded:
-        return ctx.send("해당 모듈은 이미 불러와졌습니다.")
+        return await ctx.send("해당 모듈은 이미 불러와졌습니다.")
     except commands.errors.NoEntryPointError:
-        return ctx.send("해당 모듈에 setup() 함수가 없습니다.")
+        return await ctx.send("해당 모듈에 setup() 함수가 없습니다.")
     except commands.errors.ExtensionFailed:
-        return ctx.send("해당 모듈의 setup() 실행에 실패했습니다.")
+        return await ctx.send("해당 모듈의 setup() 실행에 실패했습니다.")
     except Exception as e:
         logger.exception("Error while load cog {}".format(init_cog))
-        return ctx.send("모듈에 문제가 발생했습니다. 로그를 확인하세요.")
+        return await ctx.send("모듈에 문제가 발생했습니다. 로그를 확인하세요.")
     else:
-        return ctx.send("모듈을 불러왔습니다.")
+        return await ctx.send("모듈을 불러왔습니다.")
 
 @commands.is_owner()
 @cmd_cog.command(name="언로드")
@@ -80,12 +80,12 @@ async def cmd_cog_unload(ctx, *, cog_name):
     try:
         bot.unload_extension("cogs.{}".format(cog_name))
     except commands.errors.ExtensionNotLoaded:
-        return ctx.send("해당 모듈이 로드되지 않았습니다.")
+        return await ctx.send("해당 모듈이 로드되지 않았습니다.")
     except Exception as e:
         logger.exception("Error while load cog {}".format(init_cog))
-        return ctx.send("모듈에 문제가 발생했습니다. 로그를 확인하세요.")
+        return await ctx.send("모듈에 문제가 발생했습니다. 로그를 확인하세요.")
     else:
-        return ctx.send("모듈을 제거했습니다.")
+        return await ctx.send("모듈을 제거했습니다.")
 
 @commands.is_owner()
 @cmd_cog.command(name="리로드")
@@ -93,21 +93,22 @@ async def cmd_cog_reload(ctx, *, cog_name):
     try:
         bot.reload_extension("cogs.{}".format(cog_name))
     except commands.errors.ExtensionNotLoaded:
-        return ctx.send("해당 모듈이 로드되지 않았습니다.")
+        return await ctx.send("해당 모듈이 로드되지 않았습니다.")
     except commands.errors.ExtensionNotFound:
-        return ctx.send("해당 모듈을 찾을 수 없습니다.")
+        return await ctx.send("해당 모듈을 찾을 수 없습니다.")
     except commands.errors.NoEntryPointError:
-        return ctx.send("해당 모듈에 setup() 함수가 없습니다.")
+        return await ctx.send("해당 모듈에 setup() 함수가 없습니다.")
     except commands.errors.ExtensionFailed:
-        return ctx.send("해당 모듈의 setup() 실행에 실패했습니다.")
+        return await ctx.send("해당 모듈의 setup() 실행에 실패했습니다.")
     except Exception as e:
         logger.exception("Error while load cog {}".format(init_cog))
-        return ctx.send("모듈에 문제가 발생했습니다. 로그를 확인하세요.")
+        return await ctx.send("모듈에 문제가 발생했습니다. 로그를 확인하세요.")
     else:
-        return ctx.send("모듈을 제거했습니다.")
+        return await ctx.send("모듈을 제거했습니다.")
 
 @bot.command(name="안녕")
 async def hello(ctx):
+    print("HI")
     for emoji in lang_emojis:
         await ctx.message.add_reaction(emojis[emoji])
     await ctx.send("흠")
