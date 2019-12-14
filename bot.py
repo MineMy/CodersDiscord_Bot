@@ -31,7 +31,6 @@ async def on_ready():
     print(f'emojis : {emojis}')
 
 
-
 @bot.event
 async def on_raw_reaction_add(payload):
     msg_id = payload.message.id
