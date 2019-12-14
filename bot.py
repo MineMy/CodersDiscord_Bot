@@ -9,7 +9,7 @@ from discord.utils import get, find
 
 lang_emojis: list = ['c_', 'cpp', 'python', 'php', 'ruby', 'java', 'javascript', 'typescript', 'nodejs', 'css']
 role_setting: dict = {'c_' : 'C', 'cpp': 'C++', 'csharp' : 'C#'}
-role_setting_id = 655230612504051722
+role_setting_id = 655322859823955969
 emojis: dict
 logger = logging.getLogger("discord")
 logger.setLevel(logging.INFO)
