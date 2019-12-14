@@ -5,10 +5,11 @@ import sys
 
 import discord
 from discord.ext import commands
-from discord.utils import get
+from discord.utils import get, find
 
 lang_emojis: list = ['c_', 'cpp', 'python', 'php', 'ruby', 'java', 'javascript', 'typescript', 'nodejs', 'css']
-test_msg_id = 655230612504051722
+role_setting: dict = {'c_' : 'C', 'cpp': 'C++', 'csharp' : 'C#'}
+role_setting_id = 655230612504051722
 emojis: dict
 logger = logging.getLogger("discord")
 logger.setLevel(logging.INFO)
@@ -27,22 +28,23 @@ async def on_ready():
     print(f'emojis : {emojis}')
 
 
+
 @bot.event
-async def on_message(message):
-    if message.content[0] is bot.command_prefix:
-        print(f'{message.author} used {message.content}')
+async def on_raw_reaction_add(payload):
+    msg_id = payload.message.id
+    if msg_id is role_setting_id:
+        guild_id = payload.guild.id
+        guild = find(lambda g : g.id == guild_id, bot.guilds)
+        role = get(guild.roles, name = role_setting[payload.emoji.name])
+        if role is not None:
+            member = find(lambda m : m.id == payload.user.id, guild.members)
+            if member is not None:
+                await member.add_roles(role)
+            else:
+                await None
 
 
-'''
-@bot.event
-async def on_reaction_add(reaction, user):
-    if reaction.message.id is test_msg_id:
-        if type(user) is discord.Member:
-            for :
-                await reaction.message.author.add_roles(get(reaction.message.author, role))
-    else:
-        await None
-'''
+
 
 @bot.command(name="안녕")
 async def hello(ctx):
@@ -51,23 +53,31 @@ async def hello(ctx):
     await ctx.send("흠")
 
 
-@bot.command(name="역할신청")
+@bot.command(name="설정")
+async def setting(ctx):
+    pass
+
+@bot.command(name="역할지급")
 async def set_role(ctx):
-    msg = await ctx.send('필요한 역할을 선택해주세요.')
+    logger.debug('ser_role 진입')
+    await ctx.send('역할 지급 채널로 설정했습니다!')
+    # msg = await ctx.send('필요한 역할을 선택해주세요.')
     for emoji in lang_emojis:
         await msg.add_reaction(emojis[emoji])
-
+    # await asyncio.sleep(20)
+    # for reaction in msg.reactions:
+    '''
     def check(reaction, user):
         return user == ctx.author and reaction.emoji
-
+    
     try:
-        reactions, user = await discord.client.wait_for('reaction_add', timeout=20.0, check=check)
+        reactions, user = await bot.wait_for(event='reaction_add', timeout=20.0, check=check)
     except asyncio.TimeoutError:
         await ctx.send('오랜 시간 응답이 없어 작업을 취소합니다.')
     else:
         await ctx.send(f'입력하신 역할들 : {reactions}')
-        #await user.add_roles(get(ctx.author, role))
+        # await user.add_roles(get(ctx.author, role))
         await ctx.send('역할 부여가 완료되었습니다.')
-
+    '''
 
 bot.run(os.environ['BOT_TOKEN'])
