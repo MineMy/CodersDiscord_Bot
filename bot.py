@@ -13,6 +13,7 @@ lang_emojis: list = ['c_', 'cpp', 'python', 'php', 'ruby', 'java', 'javascript',
 role_setting: dict = {'c_' : 'C', 'cpp': 'C++', 'csharp' : 'C#'}
 role_setting_id = 655322859823955969
 emojis: dict
+logging.getLogger("discord.gateway").setLevel(logging.WARNING)
 logger = logging.getLogger("discord")
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
@@ -30,7 +31,6 @@ async def on_ready():
     print(f'emojis : {emojis}')
 
 
-
 @bot.event
 async def on_raw_reaction_add(payload):
     msg_id = payload.message.id
@@ -45,11 +45,75 @@ async def on_raw_reaction_add(payload):
             else:
                 await None
 
+@bot.event
+async def on_command_error(ctx, e):
+    if isinstance(e, commands.errors.CheckFailure):
+        return
 
+@commands.is_owner()
+@bot.group(name="모듈", invoke_without_command=True)
+async def cmd_cog(ctx):
+    msg = "현재 불러와진 모듈:"
+    for module in bot.extensions:
+        msg += "\n  {}".format(module)
+    
+    msg += "\n\n사용법: `모듈 (로드/언로드/리로드) [모듈이름]`"
+    await ctx.send(msg)
 
+@commands.is_owner()
+@cmd_cog.command(name="로드")
+async def cmd_cog_load(ctx, *, cog_name):
+    try:
+        bot.load_extension("cogs.{}".format(cog_name))
+    except commands.errors.ExtensionNotFound:
+        return await ctx.send("해당 모듈을 찾을 수 없습니다.")
+    except commands.errors.ExtensionAlreadyLoaded:
+        return await ctx.send("해당 모듈은 이미 불러와졌습니다.")
+    except commands.errors.NoEntryPointError:
+        return await ctx.send("해당 모듈에 setup() 함수가 없습니다.")
+    except commands.errors.ExtensionFailed:
+        return await ctx.send("해당 모듈의 setup() 실행에 실패했습니다.")
+    except Exception as e:
+        logger.exception("Error while load cog {}".format(init_cog))
+        return await ctx.send("모듈에 문제가 발생했습니다. 로그를 확인하세요.")
+    else:
+        return await ctx.send("모듈을 불러왔습니다.")
+
+@commands.is_owner()
+@cmd_cog.command(name="언로드")
+async def cmd_cog_unload(ctx, *, cog_name):
+    try:
+        bot.unload_extension("cogs.{}".format(cog_name))
+    except commands.errors.ExtensionNotLoaded:
+        return await ctx.send("해당 모듈이 로드되지 않았습니다.")
+    except Exception as e:
+        logger.exception("Error while load cog {}".format(init_cog))
+        return await ctx.send("모듈에 문제가 발생했습니다. 로그를 확인하세요.")
+    else:
+        return await ctx.send("모듈을 제거했습니다.")
+
+@commands.is_owner()
+@cmd_cog.command(name="리로드")
+async def cmd_cog_reload(ctx, *, cog_name):
+    try:
+        bot.reload_extension("cogs.{}".format(cog_name))
+    except commands.errors.ExtensionNotLoaded:
+        return await ctx.send("해당 모듈이 로드되지 않았습니다.")
+    except commands.errors.ExtensionNotFound:
+        return await ctx.send("해당 모듈을 찾을 수 없습니다.")
+    except commands.errors.NoEntryPointError:
+        return await ctx.send("해당 모듈에 setup() 함수가 없습니다.")
+    except commands.errors.ExtensionFailed:
+        return await ctx.send("해당 모듈의 setup() 실행에 실패했습니다.")
+    except Exception as e:
+        logger.exception("Error while load cog {}".format(init_cog))
+        return await ctx.send("모듈에 문제가 발생했습니다. 로그를 확인하세요.")
+    else:
+        return await ctx.send("모듈을 제거했습니다.")
 
 @bot.command(name="안녕")
 async def hello(ctx):
+    print("HI")
     for emoji in lang_emojis:
         await ctx.message.add_reaction(emojis[emoji])
     await ctx.send("흠")
@@ -87,10 +151,15 @@ for init_cog in Config.init_cogs:
         bot.load_extension("cogs.{}".format(init_cog))
     except commands.errors.ExtensionNotFound:
         logger.error("Cog not found: {}".format(init_cog))
+    except commands.errors.ExtensionAlreadyLoaded:
+        logger.error("Cog already load: {}".format(init_cog))
+    except commands.errors.NoEntryPointError:
+        logger.error("Cog hasn't setup(): {}".format(init_cog))
+    except commands.errors.ExtensionFailed:
+        logger.error("Cog failed to run setup(): {}".format(init_cog))
     except Exception as e:
         logger.exception("Error while load cog {}".format(init_cog))
     else:
         logger.debug("Load: {}".format(init_cog))
 
 bot.run(Config.token)
-
