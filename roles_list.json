@@ -1,0 +1,27 @@
+{
+  "lang": {
+    "c_": "C",
+    "cpp": "C++",
+    "csharp": "C#",
+    "python": "Python",
+    "rust": "Rust",
+    "java": "Java",
+    "golang": "Go",
+    "haskell": "Haskell",
+    "javascript": "Javascript",
+    "nodejs": "Node.js",
+    "typescript": "Typescript",
+    "html5": "HTML",
+    "css": "CSS",
+    "ahee": "아희",
+    "dart": "Dart"
+  },
+  "category": {
+    "app": "App",
+    "web": "Web",
+    "desktop": "Desktop",
+    "game": "Game",
+    "unity": "Unity",
+    "unreal": "Unreal"
+  }
+}
