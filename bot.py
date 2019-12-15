@@ -59,7 +59,43 @@ async def on_raw_reaction_add(payload):
         if role is not None:
             member = find(lambda m: m.id == payload.user_id, guild.members)
             if member is not None:
-                await member.add_roles(role)
+                await member.add_roles(role, reason='Auto role assignment using bot.', atomic=True)
+            else:
+                logger.error('member not found')
+        else:
+            logger.error('role not found')
+    else:
+        logger.debug(f'{payload.emoji.name} is used at {msg_id}')
+        
+        
+'''
+on_raw_reaction_remove(payload):
+    ...
+
+봇에 캐싱되지 않은 메세지에 반응이 제거되었을 때 실행되는 이벤트입니다.
+paylod는 discord.RawReactionActionEvent class로, 자세한 설명은
+
+on_raw_reaction_add() 이벤트 설명 : https://discordpy.readthedocs.io/en/latest/api.html#event-reference
+payload 설명 : https://discordpy.readthedocs.io/en/latest/api.html#discord.RawReactionActionEvent
+
+에서 확인하실 수 있습니다.
+'''
+
+
+@bot.event
+async def on_raw_reaction_remove(payload):
+    msg_id = payload.message_id
+    print(f'{payload.user_id} 님이 {msg_id}에 {payload.emoji.name} 반응을 남겼습니다.')
+    print(f'role_setting_msg_id = {role_setting_msg_id}')
+    if msg_id == role_setting_msg_id:
+        print(f'{payload.user_id} 님이 역할을 제거했습니다.')
+        guild_id = payload.guild_id
+        guild = find(lambda g: g.id == guild_id, bot.guilds)
+        role = get(guild.roles, name=roles_dict['lang'][payload.emoji.name])
+        if role is not None:
+            member = find(lambda m: m.id == payload.user_id, guild.members)
+            if member is not None:
+                await member.remove_roles(role, reason='Auto role assignment using bot.', atomic=True)
             else:
                 logger.error('member not found')
         else:
@@ -89,6 +125,12 @@ async def on_message(message):
 async def on_command_error(ctx, e):
     if isinstance(e, commands.errors.CheckFailure):
         return
+
+
+'''
+[ 봇 모듈화 ]
+모듈을 로드 / 언로드 / 리로드 하는 기능을 제공합니다.
+'''
 
 
 @commands.is_owner()
@@ -155,15 +197,21 @@ async def cmd_cog_reload(ctx, *, cog_name):
     else:
         return await ctx.send("모듈을 리로드했습니다.")
 
-
 '''
-설정 서브커맨드
+[ 모듈 - 서버 설정 ] (모듈화 필요)
+설정 커맨드와 여러 서브커맨드들이 모여있는 모듈입니다.
+서버 관리 기능을 제공합니다.
+
+setting() : 설정
+ㄴ set_role() : 역할 지급 채널 설정 커맨드.
+
 사용법 : !설정 (커맨드 이름)
 
 명령어 제작법 :
 @setting.command(name='명령어 이름')
 async def (함수명)(ctx, 필요한 추가 인자):
     ...
+    
 '''
 
 
@@ -189,6 +237,19 @@ async def set_role(ctx):
     config = open(mode='wt', file='config.txt')
     config.write(f'role_setting_msg_id={str(msg.id)}')
     config.close()
+
+
+'''
+[ 봇 전후처리 로직 ]
+
+< init() >
+봇 실행 전 config.txt, roles_list.json 파일에서 필요한 데이터를 읽어와 저장합니다.
+또, 모듈의 초기화도 담당합니다. (config.py 존재할 경우에만)
+token 값은 config.py 존재시 해당 파일에서 가져오며, 그렇지 않을 경우 콘솔에서 직접 입력받습니다.
+
+< save_datas() >
+봇 종료 후 가지고 있던 role_setting_msg_id 변수의 값을 config.txt에 저장합니다.
+'''
 
 
 def init():
@@ -244,6 +305,18 @@ def save_datas():
     config = open(mode='wt', file='config.txt')
     config.write(f'role_setting_msg_id={str(role_setting_msg_id)}')
     config.close()
+
+
+'''
+[ 프로그램 로직 ]
+
+봇 실행 전 초기화 작업
+< init() >
+-> 봇 실행
+< bot.run(token) >
+-> 봇 종료 후 데이터 저장 작업
+< save_datas() >
+'''
 
 
 print('init 실행')
