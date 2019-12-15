@@ -226,6 +226,9 @@ def init():
     roles_dict = json.loads(rl.read())
     rl.close()
     print(f'roles_dict = {roles_dict}')
+    print(f'roles_dict["lang"] = {roles_dict["lang"]}')
+    print(f'list(roles_dict["lang"].keys()) = {list(roles_dict["lang"].keys())}')
+
 
 
 def save_datas():
@@ -236,7 +239,8 @@ def save_datas():
 
 print('init 실행')
 init()
-logger.debug(f'token = {token}')
+#logger.debug(f'token = {token}')
+print(f'token = {token}')
 bot.run(token)
 save_datas()
 
